@@ -2,13 +2,26 @@ export { };    // without this, we errors like: "Augmentations for the global sc
 
 declare global {
   interface Array<T> {
-    awaitAll(): any;
-    count2(): number;
+    waitAll(): any;
+    groupBy<U>(keyExtractionFn: (T) => U): Map<U, Array<T>>;
   }
 }
 
-Array.prototype.awaitAll = async function() {
+Array.prototype.waitAll = async function () {
   return Promise.all(this);
 };
 
-Array.prototype.count2 = function() { return this.length; }
+Array.prototype.groupBy = function(keyExtractionFn) {
+  const map = new Map();
+  this.forEach(element => {
+    const key = keyExtractionFn(element);
+    if (map.has(key)) {
+      const arr = map.get(key);
+      arr.push(element);
+      map.set(key, arr);
+    } else {
+      map.set(key, [element]);
+    }
+  });
+  return map;
+}
